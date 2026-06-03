@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code Dynamic Workflows 完全ガイド ― 6パターン・14ステップ</title>
+<style>
+  :root{
+    --bg:#F5F1EB; --ink:#1F1B16; --muted:#6B6258; --line:#E2D9CC;
+    --card:#FFFDF9; --accent:#CC785C; --accent2:#B85C3E; --code-bg:#26211C;
+    --code-ink:#EDE6DA; --chip:#EFE7DA; --warn-bg:#FBEEE9;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+    line-height:1.85; font-size:17px; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:860px; margin:0 auto; padding:0 22px 100px;}
+  header.hero{
+    padding:64px 22px 48px; text-align:center;
+    background:linear-gradient(180deg,#EFE6D8 0%,var(--bg) 100%);
+    border-bottom:1px solid var(--line);
+  }
+  .hero .eyebrow{
+    display:inline-block; font-size:13px; letter-spacing:.12em; font-weight:700;
+    color:var(--accent2); background:var(--chip); padding:6px 14px; border-radius:999px;
+    margin-bottom:20px;
+  }
+  .hero h1{
+    font-size:clamp(28px,5vw,42px); line-height:1.3; margin:0 auto 18px; max-width:760px;
+    letter-spacing:-.01em;
+  }
+  .hero .sub{color:var(--muted); font-size:16px; max-width:640px; margin:0 auto 22px;}
+  .hero .meta{font-size:13.5px; color:var(--muted);}
+  .hero .meta a{color:var(--accent2); text-decoration:none;}
+  .bignum{font-size:18px; font-weight:700; color:var(--accent2); margin-top:26px;}
+
+  h2{
+    font-size:15px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent2);
+    margin:60px 0 6px; font-weight:800;
+  }
+  h3{
+    font-size:23px; margin:14px 0 10px; line-height:1.4; letter-spacing:-.01em;
+    scroll-margin-top:20px;
+  }
+  h3 .n{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px;}
+  p{margin:12px 0;}
+  strong{color:var(--accent2);}
+  .lead{font-size:19px; line-height:1.9;}
+
+  ul{padding-left:1.25em;}
+  li{margin:8px 0;}
+
+  /* 目次 */
+  .toc{
+    background:var(--card); border:1px solid var(--line); border-radius:16px;
+    padding:26px 30px; margin:44px 0; box-shadow:0 1px 0 rgba(0,0,0,.02);
+  }
+  .toc h4{margin:0 0 14px; font-size:14px; letter-spacing:.1em; color:var(--muted); text-transform:uppercase;}
+  .toc-grid{display:grid; grid-template-columns:1fr 1fr; gap:6px 28px;}
+  .toc a{
+    display:flex; gap:10px; text-decoration:none; color:var(--ink); font-size:14.5px;
+    padding:4px 0; border-bottom:1px dotted transparent;
+  }
+  .toc a:hover{color:var(--accent2);}
+  .toc a .tn{color:var(--accent); font-weight:700; min-width:22px; font-variant-numeric:tabular-nums;}
+  @media(max-width:620px){ .toc-grid{grid-template-columns:1fr;} }
+
+  /* カード/コールアウト */
+  .callout{
+    background:var(--card); border:1px solid var(--line); border-left:4px solid var(--accent);
+    border-radius:10px; padding:16px 20px; margin:20px 0; font-size:15.5px;
+  }
+  .callout.warn{border-left-color:var(--accent2); background:var(--warn-bg);}
+  .callout .label{font-size:12px; letter-spacing:.1em; font-weight:800; color:var(--accent2); text-transform:uppercase; display:block; margin-bottom:6px;}
+  .quote{
+    border-left:3px solid var(--line); padding:4px 0 4px 18px; color:var(--muted);
+    font-style:italic; margin:18px 0;
+  }
+
+  /* 3失敗モード等のミニカード */
+  .cards{display:grid; gap:14px; margin:22px 0;}
+  .mini{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 20px;}
+  .mini .t{font-weight:800; color:var(--accent2); font-size:16px; margin-bottom:4px;}
+  .mini .o{font-size:14px; color:var(--muted);}
+
+  /* コード */
+  pre{
+    background:var(--code-bg); color:var(--code-ink); border-radius:12px;
+    padding:18px 20px; overflow-x:auto; font-size:14px; line-height:1.7;
+    margin:18px 0; font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+  }
+  pre .c{color:#9A8E7C;} /* comment */
+  pre .s{color:#D8A86A;} /* string */
+  pre .k{color:#E59B7D;} /* keyword */
+  code:not(pre code){
+    background:var(--chip); padding:2px 7px; border-radius:6px; font-size:14px;
+    font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace; color:var(--accent2);
+  }
+
+  /* 対応表 */
+  table{width:100%; border-collapse:collapse; margin:20px 0; font-size:14.5px; background:var(--card);
+    border:1px solid var(--line); border-radius:12px; overflow:hidden;}
+  th,td{text-align:left; padding:12px 16px; border-bottom:1px solid var(--line); vertical-align:top;}
+  th{background:var(--chip); font-size:13px; letter-spacing:.04em; color:var(--accent2);}
+  tr:last-child td{border-bottom:none;}
+  td .case{font-weight:700;}
+
+  .divider{height:1px; background:var(--line); margin:54px 0;}
+  .pill-row{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0;}
+  .pill{background:var(--chip); color:var(--accent2); font-size:13px; font-weight:700; padding:6px 12px; border-radius:999px;}
+
+  footer{margin-top:70px; padding-top:24px; border-top:1px solid var(--line); font-size:13.5px; color:var(--muted);}
+  footer a{color:var(--accent2);}
+  .maxim{font-size:18px; font-weight:700; color:var(--ink); text-align:center; margin:30px 0; line-height:1.7;}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <span class="eyebrow">Claude Code · 公式機能解説</span>
+  <h1>Dynamic Workflows を極める<br>― 6 パターン・14 ステップ</h1>
+  <p class="sub">Anthropic のエンジニアが実際に使う「Claude が自分でハーネスを書く」やり方。50 個のプロンプトを、たった 1 本のワークフローに畳む。</p>
+  <p class="meta">原典：<strong>@0xCodez</strong>（X／2026-06-03 投稿、@0xMovez 経由で拡散）／ 日本語訳・再構成</p>
+  <p class="bignum">14 ステップ。6 パターン。50 個のプロンプトの代わりに、ワークフロー 1 本。</p>
+</header>
+
+<div class="wrap">
+
+  <p class="lead">Claude Code ユーザーの大半は、いまだにワークフローを手作業で書いている。プロンプトを数珠つなぎにし、出力をコピーして次のプロンプトに貼り、おかしくなったところを直し、それを繰り返す。ビルダーの 10 人に 9 人は、2 週間前にリリースされた Dynamic Workflows をまだ一度も試していない。</p>
+
+  <p>Dynamic Workflows は <strong>2026 年 5 月 28 日</strong>に Claude Code にリリースされた。デフォルトのハーネスはコーディング向けで、ほとんどのタスクではそれで十分だ。だが 1 つのコンテキストウィンドウでは破綻し始める種類の作業がある ―― <strong>長時間に渡る・大規模に並列・高度に構造化・敵対的(adversarial)</strong>な作業だ。こうした作業のために Anthropic はこれまで自前でカスタムハーネス(Research、Code Review、エージェントチーム)を組んでいた。Dynamic Workflows では、<strong>Claude がそのハーネスを、あなたのタスク向けにオーダーメイドで、その場で JavaScript で書いてくれる。</strong></p>
+
+  <!-- 目次 -->
+  <nav class="toc">
+    <h4>目次 ― Part 1：メンタルモデル / Part 2：6 つのパターン / Part 3：運用</h4>
+    <div class="toc-grid">
+      <a href="#s01"><span class="tn">01</span>ワークフロー＝Claude が書くハーネス</a>
+      <a href="#s02"><span class="tn">02</span>解決する 3 つの失敗モード</a>
+      <a href="#s03"><span class="tn">03</span>静的 vs 動的ワークフロー</a>
+      <a href="#s04"><span class="tn">04</span>コア API：agent / parallel / pipeline</a>
+      <a href="#s05"><span class="tn">05</span>Classify-and-act（分類してから動く）</a>
+      <a href="#s06"><span class="tn">06</span>Fan-out-and-synthesize（分散→統合）</a>
+      <a href="#s07"><span class="tn">07</span>Adversarial verification（敵対的検証）</a>
+      <a href="#s08"><span class="tn">08</span>Generate-and-filter（生成→選抜）</a>
+      <a href="#s09"><span class="tn">09</span>Tournament（トーナメント）</a>
+      <a href="#s10"><span class="tn">10</span>Loop until done（終わるまでループ）</a>
+      <a href="#s11"><span class="tn">11</span>パターンを組み合わせる（対応表）</a>
+      <a href="#s12"><span class="tn">12</span>/goal・/loop・トークン予算</a>
+      <a href="#s13"><span class="tn">13</span>quarantine（隔離）パターン</a>
+      <a href="#s14"><span class="tn">14</span>保存して Skill として出荷</a>
+      <a href="#mistakes"><span class="tn">✕</span>トークンを浪費する間違い集</a>
+    </div>
+  </nav>
+
+  <!-- PART 1 -->
+  <h2>Part 1 · メンタルモデル</h2>
+
+  <h3 id="s01"><span class="n">01</span>ワークフローとは、Claude が書くハーネスである</h3>
+  <p>デフォルトのハーネスでは、Claude が<strong>計画と実行を同じコンテキストウィンドウ</strong>で行う。ほとんどのコーディング作業ではこれで快適だが、長時間・並列・敵対的な作業では破綻する。Dynamic Workflow とは、Claude がそのタスク用に自前のカスタムハーネスを書くこと ―― サブエージェントを生成・調整する数個の特別な関数と、その間を流れるデータを処理する標準 JavaScript(Math・JSON・Array)からなる JS ファイルだ。</p>
+  <p class="quote">@_catwu（5/29）：私たちの最も強力な新機能、dynamic workflows を共有できて嬉しい。プロンプトで "workflow" と言及すれば、Claude が動的にオーケストレーション計画を作り、それを厳密に守る。すべての段階が正しい順序で実行されると安心して信頼できる。</p>
+  <p>デフォルトのハーネスにはできない、3 つのことが手に入る：</p>
+  <div class="cards">
+    <div class="mini"><div class="t">エージェントごとの隔離</div><div class="o">各サブエージェントが、1 つに絞られたゴールを持つ専用コンテキストを得る。相互汚染なし。</div></div>
+    <div class="mini"><div class="t">エージェントごとのモデル選択</div><div class="o">難しい推論には Opus、安価な探索には Haiku、中間には Sonnet ―― 各エージェントに最適なモデルを割り当てる。</div></div>
+    <div class="mini"><div class="t">エージェントごとの隔離レベル</div><div class="o">Worktree(隔離 git チェックアウト)か remote(チェックアウトなし)か。各エージェントに必要なものを選ぶ。</div></div>
+  </div>
+  <p>開始方法は 2 つ。Claude に直接頼む（「○○するワークフローを作って」）か、トリガーワード <code>ultracode</code> を使う。ワークフローが中断されても(ユーザー操作・ターミナル終了)、セッション再開で中断点から続行できる。</p>
+
+  <h3 id="s02"><span class="n">02</span>ワークフローが解決する 3 つの失敗モード</h3>
+  <p>Claude が複雑なタスクに単一コンテキストで長く取り組むほど、Anthropic のローンチ文書で名指しされた 3 つの失敗モードに陥りやすくなる。<strong>ワークフローはこの 3 つすべてを構造的に解決する</strong>。自分のタスクがこれらに苦しんでいるなら、それがワークフローに手を伸ばすサインだ。</p>
+  <div class="cards">
+    <div class="mini"><div class="t">① エージェント的怠惰（Agentic laziness）</div><div class="o">複雑な多段タスクを終える前に止まり、部分的な進捗だけで「完了」と宣言する。セキュリティレビュー 50 項目中 20 項目だけ対応して、残りを「処理済み」と言ってしまう。</div></div>
+    <div class="mini"><div class="t">② 自己選好バイアス（Self-preferential bias）</div><div class="o">検証・判定を求められると、Claude は自分自身の結果を好む。利害関係を持つ検証者は、公正な検証者になれない。</div></div>
+    <div class="mini"><div class="t">③ ゴールドリフト（Goal drift）</div><div class="o">多数ターンにまたがり当初目的への忠実度が徐々に失われる。特にコンパクション後。「X はするな」という制約が、47 ターン目で静かに消える。</div></div>
+  </div>
+
+  <h3 id="s03"><span class="n">03</span>静的ワークフロー vs 動的ワークフロー</h3>
+  <p>Claude Agent SDK や <code>claude -p</code> で静的ワークフローを組んだことがあるかもしれない。静的ワークフローは<strong>汎用的</strong>で、あらゆるエッジケースに備えて一度だけ書かれる ―― 機能はするが保守的にならざるを得ない。</p>
+  <p>Dynamic Workflows は違う。<strong>Claude がこのタスクのためにこのワークフローを書く</strong>。動的版が勝つ理由は検索ステップではなく、ワークフローが<strong>あなたの文脈に合わせて自らの形を整えられる</strong>点にある ―― あなたの課金コードを読み、各機能を実際の新プロバイダ docs と照合し、あなたの取引量で価格を試算し、自ら導きつつある答えに「なぜ移行すべきでないか」という敵対的パスを当てる。静的ハーネスにはこれができない。あなたのコードが存在することすら知らないからだ。</p>
+
+  <h3 id="s04"><span class="n">04</span>コア API ― agent() / parallel() / pipeline()</h3>
+  <p>ワークフローの仕事の大半は、この 3 つの関数がこなす。これを知っていれば、Claude が書くどんなワークフローも読めるし、特定の形にしたいとき後押しできる。</p>
+  <ul>
+    <li><code>agent()</code> ― サブエージェントを 1 体生成する。</li>
+    <li><code>parallel()</code> ― <strong>バリア</strong>。ファンアウトし、<em>すべてが返るまで待ってから</em>返す。</li>
+    <li><code>pipeline()</code> ― <strong>ストリーミング</strong>。各アイテムが各ステージを<em>独立に</em>流れていく。</li>
+  </ul>
+  <div class="callout">
+    <span class="label">選び方</span>
+    問いはひとつ ―「次に何かをする前に、<strong>すべての結果が必要か?</strong>」 YES なら <code>parallel</code>。NO なら <code>pipeline</code>（全体として安価で速い）。
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- PART 2 -->
+  <h2>Part 2 · 6 つのパターン</h2>
+
+  <h3 id="s05"><span class="n">05</span>Classify-and-act ― 作業の前に作業をルーティングする</h3>
+  <p>分類エージェントがタスクの種類を判断し、その答えに基づいて別々のエージェントや挙動へルーティングする。あるいは最後に分類器を走らせ、生の出力を次工程のためにバケツへ仕分ける。効くのは：タスクが<strong>異種混在</strong>でサブタイプごとに別扱いが要るとき／高価なモデルを複雑さが要求する箇所だけに使いたいとき(安価に分類→必要時のみ Opus)／作業の分解自体が非自明なとき。</p>
+  <div class="callout"><span class="label">例</span>「auth モジュールの仕組みを説明して」→ 分類サブエージェントがまずコードを読んで複雑さを見積もり、10 ファイルなら Sonnet、100 ファイルなら Opus へ。作業を理解した<strong>後で</strong>、仕事に合うモデルを決める。</div>
+
+  <h3 id="s06"><span class="n">06</span>Fan-out-and-synthesize ― 多数の小ステップ、1 つの統合結果</h3>
+  <p>タスクを多数の小ステップに分け、各ステップにエージェントを並列で走らせ、結果を 1 つの答えに統合する。統合ステップは<strong>バリア</strong> ―― 全ファンアウトを待ってから構造化出力をマージする。各サブエージェントは自分の担当しか見ないので、オーケストレータが 50 個の無関係な詳細に気を取られず、相互汚染も起きない。</p>
+  <div class="pill-row"><span class="pill">列挙できる作業リスト(50 ファイル/200 endpoint)</span><span class="pill">各項目が独立</span><span class="pill">最後に 1 つの統合答えが欲しい</span></div>
+<pre><span class="c">// ファンアウト：1 ファイルにつき 1 エージェント。バリア：全部を待つ。</span>
+<span class="k">const</span> reviews = <span class="k">await</span> parallel(
+  files.map(file => () => agent(
+    <span class="s">`Review ${file} for security issues`</span>,
+    { model: <span class="s">"haiku"</span>, schema: IssueList }
+  ))
+)
+
+<span class="c">// 統合：Opus エージェント 1 体がすべてをマージ。</span>
+<span class="k">const</span> report = <span class="k">await</span> agent(
+  <span class="s">`Merge these reviews into one prioritized report:\n${JSON.stringify(reviews)}`</span>,
+  { model: <span class="s">"opus"</span> }
+)</pre>
+
+  <h3 id="s07"><span class="n">07</span>Adversarial verification ― 敵対的検証</h3>
+  <p>これは<strong>自己選好バイアスへの構造的な解決策</strong>だ。生成した各エージェントに対し、その出力をルーブリックに照らして敵対的に検証する別エージェントを走らせる。検証者は元の作業を一度も見ていないので、贔屓できない。</p>
+  <ul>
+    <li><strong>主張チェック</strong>：レポートの各事実記述が、専用の検証サブエージェントで元ソースと照合される。</li>
+    <li><strong>コードレビュー</strong>：作者エージェントが修正を書き、別コンテキストのレビュアーが見る。同じ Claude が自分を判定することはない。</li>
+    <li><strong>品質ゲート</strong>：出荷前に敵対者が最も弱い点を突く。突けなければ出荷。</li>
+  </ul>
+  <div class="callout warn"><span class="label">ペアリングの鉄則</span>検証者は<strong>ルーブリックと成果物だけ</strong>を知るべきで、誰が作ったかは知ってはならない。さもないとプロンプト内のヒント経由で自己選好が忍び込む。</div>
+
+  <h3 id="s08"><span class="n">08</span>Generate-and-filter ― 生成してから選抜する</h3>
+  <p>あるテーマで多数のアイデアを生成し、ルーブリックや検証でフィルタ、重複を除去し、最高品質で検証済みのものだけを返す。ブレスト(30 個の名前→検証者が陳腐・商標衝突・語感の弱いものを排除→3 個だけ見せる)、仮説生成、ソリューション設計に効く。</p>
+  <div class="callout">「最良の答えを 1 つ」と頼むと Claude は<strong>早期にコミット</strong>する。Generate-and-filter は、全選択肢が吟味された<strong>後で遅れてコミット</strong>させる ―― これがその正反対。</div>
+
+  <h3 id="s09"><span class="n">09</span>Tournament ― ペアワイズ比較は絶対採点に勝る</h3>
+  <p>作業を分割するのでなく、エージェントたちに<strong>競わせる</strong>。N 体が異なるアプローチで同じタスクに挑み、結果を 1 つが勝つまで 2 つずつ(ペアワイズ)判定する。比較判断は絶対採点より信頼できる ―― 特にセンス依存の作業で。1,000 項目を 1 プロンプトでソートすると品質が劣化し、コンテキストにも収まらない。トーナメントはブラケットを新鮮なエージェントに分散させ、各々がたった 2 項目を比較する。<strong>ブラケット自体は決定論的なループコードに存在</strong>し、コンテキストには残らない。デザイン・候補選定・コンテンツ優先順位付けにも同じ発想が効く。</p>
+
+  <h3 id="s10"><span class="n">10</span>Loop until done ― 終わるまでループ</h3>
+  <p>作業量が不明なタスクでは、<strong>停止条件が満たされるまで</strong>エージェント生成をループする(新たな発見がない／ログにエラーがない／理論が検証された)。固定回数のパスではなく。</p>
+  <div class="pill-row"><span class="pill">フレーキーテスト：理論が成り立つまで</span><span class="pill">バグハント：1 周ゼロになるまで</span><span class="pill">パターンマイニング：新クラスタが出なくなるまで</span></div>
+  <p><code>/goal</code>(「1 つの理論が機能するまで止まるな」のような厳格な完了要件)と、ワークフロー全体を定期実行したいなら <code>/loop</code> と組み合わせる。ブラケットと停止条件はコードに存在し、コンテキストに残るのはアクティブな反復だけ。</p>
+
+  <div class="divider"></div>
+
+  <!-- PART 3 -->
+  <h2>Part 3 · 運用</h2>
+
+  <h3 id="s11"><span class="n">11</span>パターンを組み合わせる ― 1 つのワークフロー、複数のパターン</h3>
+  <p>6 パターンが単独で現れることはまれで、実際のワークフローは <strong>2〜4 個を組み合わせる</strong>。Anthropic のローンチ文書のユースケースとパターンの対応：</p>
+  <table>
+    <tr><th>ユースケース</th><th>組み合わせるパターン</th></tr>
+    <tr><td class="case">マイグレーション／リファクタ</td><td>Fan-out(worktree で callsite/失敗テストごと)→ 敵対的検証 → loop until done。<em>Anthropic が Bun を Zig→Rust に書き換えた手法。</em></td></tr>
+    <tr><td class="case">ディープリサーチ（/deep-research）</td><td>Fan-out(並列ウェブ検索)→ 敵対的検証(各主張を独立検証)→ synthesize(引用付き 1 レポート)</td></tr>
+    <tr><td class="case">ドラフトの深い検証</td><td>全事実主張を特定 → Fan-out(主張ごとに検証者)→ メタ検証者(ソースの質を確認)</td></tr>
+    <tr><td class="case">1,000 件以上の仕分け</td><td>Tournament ―― ペアワイズ比較。絶対採点は決してしない。</td></tr>
+    <tr><td class="case">メモリとルール遵守</td><td>ルールごとの検証者(fan-out)→ 懐疑者ペルソナがルール自体を見て偽陽性を防ぐ</td></tr>
+    <tr><td class="case">根本原因の調査</td><td>バラバラな証拠から理論生成(別々にログ/ファイル/データを読む)→ 各理論に検証者と反証者のパネル → 1 つが生き残るまでループ</td></tr>
+    <tr><td class="case">大規模トリアージ</td><td>Classify-and-act → 既存チケットと重複除去 → 修正試行 or エスカレーション。/loop で継続化。</td></tr>
+    <tr><td class="case">探索とセンス（デザイン/命名/UI）</td><td>Generate-and-filter(5〜20 案)→ ルーブリック付きトーナメント → ランク/選択</td></tr>
+    <tr><td class="case">軽量な評価(evals)</td><td>候補を worktree で実行 → 比較エージェントがルーブリック採点 → 改良して再採点</td></tr>
+  </table>
+  <p class="maxim">ドリフト → fan-out ／ 自己選好 → 敵対的検証<br>オープンエンド → loop until done ／ 採点困難 → トーナメント</p>
+
+  <h3 id="s12"><span class="n">12</span>/goal・/loop・トークン予算と組み合わせる</h3>
+  <p>ワークフローは高くつくことがある。3 つのコントロールが「クールだが高い」を「無人で回せるツール」に変える。</p>
+  <ul>
+    <li><strong>/goal</strong> ― 厳格な完了要件を設定。loop と組む。なしだとソフトな完了点で止まるが、ありなら実際の終了条件まで反復する。</li>
+    <li><strong>/loop</strong> ― ワークフロー全体を定期スケジュールで実行。トリアージ・週次リサーチ・定期検証など継続運用に。</li>
+    <li><strong>明示的なトークン予算</strong> ― 「10k トークンを使え」とプロンプトで上限を切る。なしだと野心的なワークフローは予想の <strong>5〜10 倍</strong>に膨らむ。</li>
+  </ul>
+<pre><span class="k">&gt;</span> ultracode quick adversarial review of this assumption:
+  <span class="s">"moving to Postgres eliminates our shard rebalancing."</span>
+  Use 5k tokens. /goal don't stop until you have either
+  a counterexample or three independent confirmations.</pre>
+  <div class="callout warn"><span class="label">Claude Code チームより</span>「ベストプラクティスはまだ発展途上です。Dynamic workflows はしばしばより多くのトークンを使うので、いつ・どう使うかを慎重に考えてください。」 ―― 通常の Claude Code セッションで 5 分で終わるなら、ワークフローは要らない。</div>
+
+  <h3 id="s13"><span class="n">13</span>quarantine（隔離）パターン ― 信頼できない入力に</h3>
+  <p>信頼できない公開コンテンツ(サポートチケット・バグ報告・ユーザーフィードバック・スクレイプデータ)を読むワークフローは、その中に<strong>プロンプトインジェクションが含まれうる</strong>と想定すべきだ。対策は <strong>quarantine(隔離)</strong> ―― 信頼できないコンテンツを読むエージェントには高権限のアクションを一切禁じ、生コンテンツに触れない別エージェントが実際の操作を行う。</p>
+  <div class="callout">入力をあなた自身か信頼できる同僚が書いたのでないなら、隔離せよ。<strong>30 行の読み取り専用リーダーエージェントはほぼコストゼロ</strong>で、プロンプトインジェクションのリスクを丸ごと 1 クラス除去する。</div>
+
+  <h3 id="s14"><span class="n">14</span>ワークフローを保存し、Skill として出荷する</h3>
+  <p>機能したら、ワークフローメニューで <code>s</code> を押して保存する。保存先は <code>~/.claude/workflows</code>。そこから 2 つの道：</p>
+  <ul>
+    <li><strong>ローカルに保持</strong> ― 自分のプロジェクト間で再利用する。</li>
+    <li><strong>Skill として出荷</strong> ― JS ファイルを Skill フォルダに同梱し SKILL.md から参照。インストールした誰もが同じワークフローを実行できる。</li>
+  </ul>
+  <div class="callout"><span class="label">実務のコツ</span>Skill にパッケージするときは、ワークフローを<strong>「逐語的に実行するスクリプト」ではなく「テンプレート」として扱う</strong>よう Claude に促す。全体構造を保ちつつ、手元の具体タスクに形を適応させる余地が残る。「deep verification」や「triage」のように柔軟さが要るワークフローで特に有用。</div>
+
+  <div class="divider"></div>
+
+  <h2 id="mistakes">トークンを浪費する間違い集</h2>
+  <div class="cards">
+    <div class="mini"><div class="t">通常セッションで済むのにワークフローを使う</div><div class="o">大半のコーディングは 5 人レビュアーのパネルなど要らない。</div></div>
+    <div class="mini"><div class="t">トークン予算がない</div><div class="o">明示上限なしだと予想の 5〜10 倍に膨らむ。</div></div>
+    <div class="mini"><div class="t">1 エージェントが作業と検証を兼ねる</div><div class="o">自己選好で検証者が作業者を贔屓する。両者は分離せよ。</div></div>
+    <div class="mini"><div class="t">parallel と pipeline を交換可能と思う</div><div class="o">バリアが重要 ―― parallel は全部待ち、pipeline はストリームする。</div></div>
+    <div class="mini"><div class="t">loop で /goal を省く</div><div class="o">最初のソフトな完了点で早々に止まる。/goal が厳格な完了を強制する。</div></div>
+    <div class="mini"><div class="t">信頼できないコンテンツをアクターに届かせる</div><div class="o">ユーザー投稿物を処理するなら隔離は任意ではない。</div></div>
+    <div class="mini"><div class="t">絶対スコアで仕分けする</div><div class="o">比較判断のほうが信頼できる。トーナメントを使え。</div></div>
+    <div class="mini"><div class="t">機能したワークフローを保存しない</div><div class="o">毎週同じ形を再プロンプトする羽目に。s で保存し Skill 化せよ。</div></div>
+  </div>
+
+  <footer>
+    <p>原典：<a href="https://x.com/0xCodez">@0xCodez</a> による X 上の記事（2026 年 6 月 3 日 20:00 投稿、<a href="https://x.com/0xMovez/status/2062164743448633393">@0xMovez</a> 経由で拡散・30.6K Views）。引用：@_catwu（Claude Code チーム）。<br>本ページは日本語訳・再構成版。技術用語は原語を併記。Dynamic Workflows は 2026-05-28 に Claude Code でリリース。</p>
+  </footer>
+
+</div>
+</body>
+</html>
