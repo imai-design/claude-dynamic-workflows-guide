@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Claude Code Dynamic Workflows 完全ガイド ― 6パターン・14ステップ</title>
+<title>Claude Code Dynamic Workflows 完全ガイド（非公式日本語訳）― 6パターン・14ステップ</title>
 <style>
   :root{
     --bg:#F5F1EB; --ink:#1F1B16; --muted:#6B6258; --line:#E2D9CC;
-    --card:#FFFDF9; --accent:#CC785C; --accent2:#B85C3E; --code-bg:#26211C;
+    --card:#FFFDF9; --accent:#BF5E3C; --accent2:#A0432A; --code-bg:#26211C;
     --code-ink:#EDE6DA; --chip:#EFE7DA; --warn-bg:#FBEEE9;
   }
   *{box-sizing:border-box;}
@@ -41,6 +41,7 @@
     font-size:15px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent2);
     margin:60px 0 6px; font-weight:800;
   }
+  h2[id]{scroll-margin-top:24px;}
   h3{
     font-size:23px; margin:14px 0 10px; line-height:1.4; letter-spacing:-.01em;
     scroll-margin-top:20px;
@@ -120,11 +121,15 @@
 <body>
 
 <header class="hero">
-  <span class="eyebrow">Claude Code · 公式機能解説</span>
+  <span class="eyebrow">非公式・日本語訳 / Unofficial JP Translation</span>
   <h1>Dynamic Workflows を極める<br>― 6 パターン・14 ステップ</h1>
   <p class="sub">Anthropic のエンジニアが実際に使う「Claude が自分でハーネスを書く」やり方。50 個のプロンプトを、たった 1 本のワークフローに畳む。</p>
-  <p class="meta">原典：<strong>@0xCodez</strong>（X／2026-06-03 投稿、@0xMovez 経由で拡散）／ 日本語訳・再構成</p>
+  <p class="meta">原典：<strong>@0xCodez</strong>（X／2026-06-03 20:00 投稿・30.6K Views）／引用：@_catwu（Claude Code チーム）／非公式日本語訳・再構成</p>
   <p class="bignum">14 ステップ。6 パターン。50 個のプロンプトの代わりに、ワークフロー 1 本。</p>
+  <div class="callout warn" style="max-width:660px; margin:26px auto 0; text-align:left;">
+    <span class="label">非公式翻訳について / Unofficial</span>
+    本ページは <strong>@0xCodez</strong> 氏が X で公開した記事の<strong>非公式な日本語訳・再構成</strong>です。Anthropic および原著者による公式・公認の文書ではありません。正確性は原典をご確認ください ―― <a href="https://x.com/0xCodez" style="color:var(--accent2); font-weight:700;">@0xCodez の投稿（X）</a>。
+  </div>
 </header>
 
 <div class="wrap">
@@ -301,7 +306,7 @@
   </div>
 
   <footer>
-    <p>原典：<a href="https://x.com/0xCodez">@0xCodez</a> による X 上の記事（2026 年 6 月 3 日 20:00 投稿、<a href="https://x.com/0xMovez/status/2062164743448633393">@0xMovez</a> 経由で拡散・30.6K Views）。引用：@_catwu（Claude Code チーム）。<br>本ページは日本語訳・再構成版。技術用語は原語を併記。Dynamic Workflows は 2026-05-28 に Claude Code でリリース。</p>
+    <p>原典：<a href="https://x.com/0xCodez">@0xCodez</a> による X 上の記事（2026 年 6 月 3 日 20:00 投稿・30.6K Views）。引用：@_catwu（Claude Code チーム）。<br><strong>本ページは @0xCodez 氏の記事の非公式な日本語訳・再構成であり、Anthropic および原著者の公式・公認文書ではありません（Unofficial Japanese translation — not affiliated with or endorsed by Anthropic or the original author）。</strong>誤りがあれば原典が優先されます。技術用語は原語を併記。Dynamic Workflows は 2026-05-28 に Claude Code でリリース。<br>発行：RYOSEIWORLD合同会社</p>
   </footer>
 
 </div>
